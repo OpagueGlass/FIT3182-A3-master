@@ -1,1 +1,1 @@
-ssh -i key.pem ubuntu@13.229.96.62 "cd FIT3182-A3-master"
+ssh -i key.pem ubuntu@13.229.96.62
