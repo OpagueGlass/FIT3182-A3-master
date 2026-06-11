@@ -1,0 +1,21 @@
+services:
+  zookeeper:
+    image: fit3182/zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_PORT}
+    ports:
+      - "${ZOOKEEPER_PORT}:${ZOOKEEPER_PORT}"
+    networks:
+      - fit3182-net
+
+  pyspark:
+    image: fit3182/pyspark
+    ports:
+      - "${JUPYTER_PORT}:8888"
+      - "${SPARKUI_PORT}:4040"
+    volumes:
+      - ${PROJECT_ROOT}:/home/student
+    networks:
+      - fit3182-net
+    command: jupyter notebook --ip=0.0.0.0 --no-browser --allow-root
+    user: "root"
