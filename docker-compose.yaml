@@ -13,6 +13,8 @@ services:
       - "${SPARKUI_PORT}:4040"
       - "${SPARK_MASTER_PORT}:7077"
       - "8080:8080"
+      - "${SPARK_DRIVER_PORT}:39000"
+      - "${SPARK_BLOCK_MANAGER_PORT}:39001"
     volumes:
       - ${PROJECT_ROOT}:/home/student
     command: jupyter notebook --ip=0.0.0.0 --no-browser --allow-root

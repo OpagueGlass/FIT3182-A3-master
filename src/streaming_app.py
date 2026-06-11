@@ -20,6 +20,11 @@ import shutil
 
 KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "172.31.41.197:9092,172.31.43.191:9092")
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://172.31.33.215:27017/")
+SPARK_MASTER_URL = os.getenv("SPARK_MASTER_URL", "spark://172.31.40.21:7077")
+SPARK_DRIVER_HOST = os.getenv("SPARK_DRIVER_HOST", "172.31.40.21")
+SPARK_DRIVER_PORT = os.getenv("SPARK_DRIVER_PORT", "39000")
+SPARK_BLOCK_MANAGER_PORT = os.getenv("SPARK_BLOCK_MANAGER_PORT", "39001")
+
 TOPIC_A = "camera-events-A"
 TOPIC_B = "camera-events-B"
 TOPIC_C = "camera-events-C"
@@ -85,10 +90,14 @@ def main():
     # Initialise the Spark Session with all available local cores and stopping gracefully on shutdown
     spark = (
         SparkSession.builder
-        .master(os.getenv("SPARK_MASTER_URL", "spark://172.31.40.21:7077"))
+        .master(SPARK_MASTER_URL)
         .appName("FIT3182 A2 Streaming Join")
         .config("spark.streaming.stopGracefullyOnShutdown", "true")
         .config("spark.sql.shuffle.partitions", "2")
+        .config("spark.driver.host", SPARK_DRIVER_HOST)
+        .config("spark.driver.bindAddress", "0.0.0.0")
+        .config("spark.driver.port", SPARK_DRIVER_PORT)
+        .config("spark.blockManager.port", SPARK_BLOCK_MANAGER_PORT)
         .getOrCreate()
     )
     
