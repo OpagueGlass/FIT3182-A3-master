@@ -42,7 +42,7 @@ CHECKPOINT_UNMATCHED_AB = f"{CHECKPOINT_DIR}/unmatched_ab"
 CHECKPOINT_UNMATCHED_BC = f"{CHECKPOINT_DIR}/unmatched_bc"
 
 def main():
-        
+    
     # Initialise MongoDB client and database
     mongo_client = MongoClient(MONGO_URI)
     db = mongo_client["fit3182_db"]
