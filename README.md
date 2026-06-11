@@ -34,7 +34,7 @@ git clone https://github.com/OpagueGlass/FIT3182-A3-master.git
 
 Run the application
 ```bash
-cd FIT3182-A3
+cd FIT3182-A3-master
 bash start.sh
 ```
 
