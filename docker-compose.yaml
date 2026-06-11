@@ -17,6 +17,7 @@ services:
       - "${SPARK_BLOCK_MANAGER_PORT}:39001"
     volumes:
       - ${PROJECT_ROOT}:/home/student
+      - /mnt/shared:/mnt/shared
     command: jupyter notebook --ip=0.0.0.0 --no-browser --allow-root
     user: "root"
     environment:

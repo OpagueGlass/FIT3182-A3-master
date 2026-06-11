@@ -27,6 +27,16 @@ sudo systemctl enable docker
 sudo systemctl start docker
 ```
 
+Create EFS and add to security group with NFS port 2049 open for inbound
+
+All spark worker and driver nodes:
+```bash
+sudo apt install -y nfs-common
+sudo mkdir -p /mnt/shared
+sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport fs-0fe24275098f9ef8b.efs.ap-southeast-1.amazonaws.com:/ \
+  /mnt/shared
+```
+
 Clone the repository
 ```bash
 git clone https://github.com/OpagueGlass/FIT3182-A3-master.git

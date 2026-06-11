@@ -16,9 +16,8 @@ from datetime import datetime
 from time import sleep
 from logging import getLogger, INFO, Formatter
 from logging.handlers import RotatingFileHandler
-import shutil
 
-KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "172.31.41.197:9092,172.31.43.191:9092")
+KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP", "172.31.41.197:9092,172.31.43.191:9092")
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://172.31.33.215:27017/")
 SPARK_MASTER_URL = os.getenv("SPARK_MASTER_URL", "spark://172.31.40.21:7077")
 SPARK_DRIVER_HOST = os.getenv("SPARK_DRIVER_HOST", "172.31.40.21")
@@ -33,7 +32,14 @@ MAX_WRITE_RETRIES = 3
 RETRY_DELAY_SECONDS = 2
 
 ROOT_DIR = "/home/student"
-
+CHECKPOINT_DIR = "/mnt/shared/checkpoints"
+CHECKPOINT_INSTANT_A = f"{CHECKPOINT_DIR}/instant_a"
+CHECKPOINT_INSTANT_B = f"{CHECKPOINT_DIR}/instant_b"
+CHECKPOINT_INSTANT_C = f"{CHECKPOINT_DIR}/instant_c"
+CHECKPOINT_AVERAGE_AB = f"{CHECKPOINT_DIR}/average_ab"
+CHECKPOINT_AVERAGE_BC = f"{CHECKPOINT_DIR}/average_bc"
+CHECKPOINT_UNMATCHED_AB = f"{CHECKPOINT_DIR}/unmatched_ab"
+CHECKPOINT_UNMATCHED_BC = f"{CHECKPOINT_DIR}/unmatched_bc"
 
 def main():
         
@@ -411,7 +417,7 @@ def main():
                     sleep(RETRY_DELAY_SECONDS)
 
 
-    def start_stream(stream, batch_function=write_to_mongo):
+    def start_stream(stream, checkpoint_location, batch_function=write_to_mongo):
         """
         Starts a Spark Structured Streaming query in append output mode, writing each
         micro-batch using the provided batch function. Checkpointing is enabled to allow
@@ -427,19 +433,21 @@ def main():
         """
         return (
             stream.writeStream.foreachBatch(batch_function)
-            .outputMode("append").start()
+            .outputMode("append")
+            .option("checkpointLocation", checkpoint_location)
+            .start()
         )
         
     try:
         # Start the streaming queries for the instantaneous violations, average speed violations, and unmatched pairs to log
         # dropped pairs
-        query_a = start_stream(instant_violations_a)
-        query_b = start_stream(instant_violations_b)
-        query_c = start_stream(instant_violations_c)
-        query_ab = start_stream(inner_join_ab)
-        query_bc = start_stream(inner_join_bc)
-        log_unmatched_ab = start_stream(unmatched_ab, log_dropped_pairs)
-        log_unmatched_bc = start_stream(unmatched_bc, log_dropped_pairs)
+        query_a = start_stream(instant_violations_a, CHECKPOINT_INSTANT_A)
+        query_b = start_stream(instant_violations_b, CHECKPOINT_INSTANT_B)
+        query_c = start_stream(instant_violations_c, CHECKPOINT_INSTANT_C)
+        query_ab = start_stream(inner_join_ab, CHECKPOINT_AVERAGE_AB)
+        query_bc = start_stream(inner_join_bc, CHECKPOINT_AVERAGE_BC)
+        log_unmatched_ab = start_stream(unmatched_ab, CHECKPOINT_UNMATCHED_AB, log_dropped_pairs)
+        log_unmatched_bc = start_stream(unmatched_bc, CHECKPOINT_UNMATCHED_BC, log_dropped_pairs)
         print("Streaming queries started. Awaiting termination...")
         print("Logging dropped pairs to console:")
         spark.streams.awaitAnyTermination() # Wait for any of the streaming queries to terminate
