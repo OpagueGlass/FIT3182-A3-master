@@ -15,3 +15,5 @@ services:
       - ${PROJECT_ROOT}:/home/student
     command: jupyter notebook --ip=0.0.0.0 --no-browser --allow-root
     user: "root"
+    environment:
+      SPARK_MASTER_URL: ${SPARK_MASTER_URL}
