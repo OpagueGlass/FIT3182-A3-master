@@ -427,8 +427,7 @@ def main():
         """
         return (
             stream.writeStream.foreachBatch(batch_function)
-            .outputMode("append").option("checkpointLocation")
-            .start()
+            .outputMode("append").start()
         )
         
     try:
