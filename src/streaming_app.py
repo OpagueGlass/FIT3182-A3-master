@@ -417,7 +417,7 @@ def main():
                     sleep(RETRY_DELAY_SECONDS)
 
 
-    def start_stream(stream, checkpoint_location, batch_function=write_to_mongo):
+    def start_stream(stream, checkpoint_location, query_name, batch_function=write_to_mongo):
         """
         Starts a Spark Structured Streaming query in append output mode, writing each
         micro-batch using the provided batch function. Checkpointing is enabled to allow
@@ -434,6 +434,7 @@ def main():
         return (
             stream.writeStream.foreachBatch(batch_function)
             .outputMode("append")
+            .queryName(query_name)
             .option("checkpointLocation", checkpoint_location)
             .start()
         )
@@ -441,13 +442,13 @@ def main():
     try:
         # Start the streaming queries for the instantaneous violations, average speed violations, and unmatched pairs to log
         # dropped pairs
-        query_a = start_stream(instant_violations_a, CHECKPOINT_INSTANT_A)
-        query_b = start_stream(instant_violations_b, CHECKPOINT_INSTANT_B)
-        query_c = start_stream(instant_violations_c, CHECKPOINT_INSTANT_C)
-        query_ab = start_stream(inner_join_ab, CHECKPOINT_AVERAGE_AB)
-        query_bc = start_stream(inner_join_bc, CHECKPOINT_AVERAGE_BC)
-        log_unmatched_ab = start_stream(unmatched_ab, CHECKPOINT_UNMATCHED_AB, log_dropped_pairs)
-        log_unmatched_bc = start_stream(unmatched_bc, CHECKPOINT_UNMATCHED_BC, log_dropped_pairs)
+        query_a = start_stream(instant_violations_a, CHECKPOINT_INSTANT_A, "Instantaneous_Violations_A")
+        query_b = start_stream(instant_violations_b, CHECKPOINT_INSTANT_B, "Instantaneous_Violations_B")
+        query_c = start_stream(instant_violations_c, CHECKPOINT_INSTANT_C, "Instantaneous_Violations_C")
+        query_ab = start_stream(inner_join_ab, CHECKPOINT_AVERAGE_AB, "Average_Speed_Violations_AB")
+        query_bc = start_stream(inner_join_bc, CHECKPOINT_AVERAGE_BC, "Average_Speed_Violations_BC")
+        log_unmatched_ab = start_stream(unmatched_ab, CHECKPOINT_UNMATCHED_AB, "Unmatched_Pairs_AB", log_dropped_pairs)
+        log_unmatched_bc = start_stream(unmatched_bc, CHECKPOINT_UNMATCHED_BC, "Unmatched_Pairs_BC", log_dropped_pairs)
         print("Streaming queries started. Awaiting termination...")
         print("Logging dropped pairs to console:")
         spark.streams.awaitAnyTermination() # Wait for any of the streaming queries to terminate
